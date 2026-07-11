@@ -17,13 +17,51 @@ from formatter import (
 from fractions import Fraction
 
 
+def handle_output(output):
+    """
+    Handles different types of parser results.
+    """
+
+    # Polynomial classification
+    if (
+        isinstance(output, tuple)
+        and len(output) == 2
+        and isinstance(output[0], str)
+        and isinstance(output[1], (int, type(None)))
+    ):
+        polynomial_info(output[0], output[1])
+        return
+
+    # Rational numbers list
+    if (
+        isinstance(output, list)
+        and output
+        and isinstance(output[0], Fraction)
+    ):
+        rationals(output)
+        return
+
+    # Equation solutions
+    if isinstance(output, list):
+        equation_solution(None, output)
+        return
+
+    # Normal calculation result
+    result(output)
+
+
 def main():
 
     banner()
 
     while True:
 
-        command = input("\ncalc:~$ ").strip()
+        try:
+            command = input("\ncalc:~$ ").strip()
+
+        except (KeyboardInterrupt, EOFError):
+            print("\nGoodbye!")
+            break
 
         if not command:
             continue
@@ -45,49 +83,8 @@ def main():
             continue
 
         try:
-
             output = parse(command)
-
-            # -------------------------
-            # Polynomial classification
-            # -------------------------
-
-            if (
-                isinstance(output, tuple)
-                and len(output) == 2
-                and isinstance(output[0], str)
-            ):
-
-                polynomial_info(output[0], output[1])
-                continue
-
-            # -------------------------
-            # Rational list
-            # -------------------------
-
-            if (
-                isinstance(output, list)
-                and len(output) > 0
-                and isinstance(output[0], Fraction)
-            ):
-
-                rationals(output)
-                continue
-
-            # -------------------------
-            # Equation solutions
-            # -------------------------
-
-            if isinstance(output, list):
-
-                equation_solution("x", output)
-                continue
-
-            # -------------------------
-            # Normal result
-            # -------------------------
-
-            result(output)
+            handle_output(output)
 
         except Exception as ex:
             error(ex)
