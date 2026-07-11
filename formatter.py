@@ -43,17 +43,23 @@ def error(message):
 
 def equation_solution(variable, solutions):
     """
-    Prints one or more equation solutions.
+    Prints equation solutions.
     """
 
     title("Solution")
 
+    if not variable:
+        variable = "x"
+
     if isinstance(solutions, (list, tuple, set)):
+
         if len(solutions) == 0:
             print("No solution.")
+
         else:
-            for s in solutions:
-                print(f"{variable} = {s}")
+            for solution in solutions:
+                print(f"{variable} = {solution}")
+
     else:
         print(f"{variable} = {solutions}")
 
@@ -80,8 +86,8 @@ def rationals(fractions):
 
     title("Rational Numbers")
 
-    for f in fractions:
-        print(f"{f} = {float(f)}")
+    for fraction in fractions:
+        print(f"{fraction} = {float(fraction)}")
 
     print(LINE)
 
@@ -111,8 +117,13 @@ def help_menu():
     print("degree(expression)")
     print("type(expression)")
     print("sqrt(number)")
+
+    print()
     print("Equation solving:")
-    print("    x^2+5x+6=0")
+    print("    a^2+5a+6=0")
+    print("    x^2+y=10")
+
+    print()
     print("Find rationals:")
     print("    fr(3,4) 12")
 
