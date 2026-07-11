@@ -40,14 +40,18 @@ def preprocess(expr):
     # 2(x+1)
     expr = re.sub(r"(\d)\(", r"\1*(", expr)
 
-    # )x
+    # )x -> )*x
     expr = re.sub(r"\)([a-z])", r")*\1", expr)
 
-    # x(
+    # x( -> x*(
     expr = re.sub(r"([a-z])\(", r"\1*(", expr)
 
-    # xy -> x*y
-    expr = re.sub(r"([a-z])([a-z])", r"\1*\2", expr)
+    # xy -> x*y (only single variables)
+    expr = re.sub(
+        r"([a-z])([a-z])",
+        r"\1*\2",
+        expr
+    )
 
     return expr
 
@@ -77,60 +81,55 @@ def parse(command):
 
         return find_rationals(left, right, amount)
 
-    # ------------------------------------------
-    # expand(...)
-    # ------------------------------------------
-
-    if command.startswith("expand("):
-
-        expr = preprocess(command[7:-1])
-
-        return expand_expr(
-            sympify(expr, locals=SAFE_NAMESPACE)
-        )
 
     # ------------------------------------------
-
-    if command.startswith("factor("):
-
-        expr = preprocess(command[7:-1])
-
-        return factor_expr(
-            sympify(expr, locals=SAFE_NAMESPACE)
-        )
-
+    # Functions
     # ------------------------------------------
 
-    if command.startswith("simplify("):
+    functions = {
+        "expand(": expand_expr,
+        "factor(": factor_expr,
+        "simplify(": simplify_expr,
+        "collect(": collect_expr,
+    }
 
-        expr = preprocess(command[9:-1])
 
-        return simplify_expr(
-            sympify(expr, locals=SAFE_NAMESPACE)
-        )
+    for name, func in functions.items():
+
+        if command.startswith(name):
+
+            expr = preprocess(
+                command[len(name):-1]
+            )
+
+            return func(
+                sympify(
+                    expr,
+                    locals=SAFE_NAMESPACE
+                )
+            )
+
 
     # ------------------------------------------
-
-    if command.startswith("collect("):
-
-        expr = preprocess(command[8:-1])
-
-        return collect_expr(
-            sympify(expr, locals=SAFE_NAMESPACE)
-        )
-
+    # Polynomial type
     # ------------------------------------------
 
     if command.startswith("type("):
 
-        expr = preprocess(command[5:-1])
-
-        return classify(
-            sympify(expr, locals=SAFE_NAMESPACE)
+        expr = preprocess(
+            command[5:-1]
         )
 
+        return classify(
+            sympify(
+                expr,
+                locals=SAFE_NAMESPACE
+            )
+        )
+
+
     # ------------------------------------------
-    # EQUATION
+    # Equation
     # ------------------------------------------
 
     if "=" in command:
@@ -147,10 +146,16 @@ def parse(command):
             locals=SAFE_NAMESPACE
         )
 
-        return solve_equation(left, right)
+        variable, solutions = solve_equation(
+            left,
+            right
+        )
+
+        return variable, solutions
+
 
     # ------------------------------------------
-    # NORMAL EXPRESSION
+    # Normal expression
     # ------------------------------------------
 
     expr = sympify(
