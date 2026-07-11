@@ -7,15 +7,28 @@ for Quantum Algebra Calculator.
 
 from sympy import symbols, pi, sqrt
 
+
 # =====================================================
-# VARIABLES
+# VARIABLES (a-z)
 # =====================================================
 
 (
     a, b, c, d, e, f, g, h, i, j,
     k, l, m, n, o, p, q, r, s, t,
     u, v, w, x, y, z
-) = symbols("a b c d e f g h i j k l m n o p q r s t u v w x y z", real=True)
+) = symbols(
+    "a b c d e f g h i j k l m n o p q r s t u v w x y z",
+    real=True
+)
+
+
+# All polynomial variables
+VARIABLES = (
+    a, b, c, d, e, f, g, h, i, j,
+    k, l, m, n, o, p, q, r, s, t,
+    u, v, w, x, y, z
+)
+
 
 # =====================================================
 # CONSTANTS
@@ -25,6 +38,7 @@ CONSTANTS = {
     "pi": pi
 }
 
+
 # =====================================================
 # FUNCTIONS
 # =====================================================
@@ -32,6 +46,7 @@ CONSTANTS = {
 FUNCTIONS = {
     "sqrt": sqrt
 }
+
 
 # =====================================================
 # SAFE NAMESPACE
@@ -41,33 +56,12 @@ SAFE_NAMESPACE = {
     **CONSTANTS,
     **FUNCTIONS,
 
-    "a": a,
-    "b": b,
-    "c": c,
-    "d": d,
-    "e": e,
-    "f": f,
-    "g": g,
-    "h": h,
-    "i": i,
-    "j": j,
-    "k": k,
-    "l": l,
-    "m": m,
-    "n": n,
-    "o": o,
-    "p": p,
-    "q": q,
-    "r": r,
-    "s": s,
-    "t": t,
-    "u": u,
-    "v": v,
-    "w": w,
-    "x": x,
-    "y": y,
-    "z": z
+    **{
+        symbol.name: symbol
+        for symbol in VARIABLES
+    }
 }
+
 
 # =====================================================
 # NEWTON-RAPHSON SETTINGS
