@@ -2,11 +2,12 @@
 classifier.py
 
 Determines the type of polynomial based on
-the number of terms.
+the number of terms and supports variables a-z.
 """
 
 from sympy import Poly
-from constants import x
+from constants import VARIABLES
+
 
 # Polynomial names
 POLY_NAMES = {
@@ -20,28 +21,33 @@ POLY_NAMES = {
     7: "Heptanomial",
     8: "Octanomial",
     9: "Nonanomial",
-    10: "Decanomial"
+    10: "Decanomial",
 }
+
+
+def make_poly(expr):
+    """
+    Creates a polynomial using variables a-z.
+    """
+    return Poly(expr, *VARIABLES)
 
 
 def classify(expr):
     """
     Returns:
-        (type_name, degree)
+        (polynomial type, degree)
     """
 
     try:
-        poly = Poly(expr, x)
+        poly = make_poly(expr)
 
         terms = len(poly.terms())
-        degree = poly.degree()
+        degree = poly.total_degree()
 
         if terms in POLY_NAMES:
             poly_type = POLY_NAMES[terms]
-        elif terms > 10:
-            poly_type = f"Polynomial ({terms} terms)"
         else:
-            poly_type = "Unknown"
+            poly_type = f"Polynomial ({terms} terms)"
 
         return poly_type, degree
 
@@ -51,47 +57,39 @@ def classify(expr):
 
 def term_count(expr):
     """
-    Returns the number of terms.
+    Returns number of terms.
     """
-
     try:
-        poly = Poly(expr, x)
-        return len(poly.terms())
+        return len(make_poly(expr).terms())
     except Exception:
         return 0
 
 
 def degree(expr):
     """
-    Returns the polynomial degree.
+    Returns polynomial degree.
     """
-
     try:
-        poly = Poly(expr, x)
-        return poly.degree()
+        return make_poly(expr).total_degree()
     except Exception:
         return None
 
 
 def leading_coefficient(expr):
     """
-    Returns the leading coefficient.
+    Returns leading coefficient.
     """
-
     try:
-        poly = Poly(expr, x)
-        return poly.LC()
+        return make_poly(expr).LC()
     except Exception:
         return None
 
 
 def constant_term(expr):
     """
-    Returns the constant term.
+    Returns constant term.
     """
-
     try:
-        poly = Poly(expr, x)
-        return poly.TC()
+        return make_poly(expr).TC()
     except Exception:
         return None
