@@ -15,18 +15,33 @@ from sympy import (
     solve,
     diff,
     integrate,
-    sqrt,
-    pi,
     sympify,
     N,
 )
 
 from constants import (
-    x,
+    SAFE_NAMESPACE,
     NEWTON_MAX_ITERATIONS,
     NEWTON_TOLERANCE,
     NEWTON_INITIAL_GUESS,
 )
+
+
+# ==========================================================
+# VARIABLE DETECTION
+# ==========================================================
+
+def get_variable(expr):
+    """
+    Returns the first variable found alphabetically.
+    Defaults to x if no variable exists.
+    """
+    symbols = sorted(expr.free_symbols, key=lambda s: s.name)
+
+    if symbols:
+        return symbols[0]
+
+    return SAFE_NAMESPACE["x"]
 
 
 # ==========================================================
@@ -46,15 +61,15 @@ def factor_expr(expr):
 
 
 def collect_expr(expr):
-    return collect(expr, x)
+    return collect(expr, get_variable(expr))
 
 
 def derivative(expr):
-    return diff(expr, x)
+    return diff(expr, get_variable(expr))
 
 
 def integral(expr):
-    return integrate(expr, x)
+    return integrate(expr, get_variable(expr))
 
 
 # ==========================================================
@@ -65,33 +80,35 @@ def solve_equation(left, right=0):
 
     equation = Eq(left, right)
 
+    variable = get_variable(left - right)
+
     try:
-        ans = solve(equation, x)
+        ans = solve(equation, variable)
 
         if ans:
-            return ans
+            return variable, ans
 
     except Exception:
         pass
 
-    return [newton_raphson(left - right)]
+    return variable, [newton_raphson(left - right, variable)]
 
 
 # ==========================================================
 # NEWTON-RAPHSON
 # ==========================================================
 
-def newton_raphson(expr):
+def newton_raphson(expr, variable):
 
     f = sympify(expr)
-    fp = diff(f, x)
+    fp = diff(f, variable)
 
     guess = float(NEWTON_INITIAL_GUESS)
 
     for _ in range(NEWTON_MAX_ITERATIONS):
 
-        fx = float(f.subs(x, guess))
-        dfx = float(fp.subs(x, guess))
+        fx = float(f.subs(variable, guess))
+        dfx = float(fp.subs(variable, guess))
 
         if abs(dfx) < 1e-15:
             break
@@ -111,15 +128,15 @@ def newton_raphson(expr):
 # ==========================================================
 
 def degree(expr):
-    return Poly(expr, x).degree()
+    return Poly(expr, get_variable(expr)).degree()
 
 
 def leading_coefficient(expr):
-    return Poly(expr, x).LC()
+    return Poly(expr, get_variable(expr)).LC()
 
 
 def constant_term(expr):
-    return Poly(expr, x).TC()
+    return Poly(expr, get_variable(expr)).TC()
 
 
 # ==========================================================
@@ -147,14 +164,11 @@ def find_rationals(a, b, amount):
 
             frac = Fraction(numerator, denominator)
 
-            if frac > a and frac < b:
+            if a < frac < b and frac not in found:
+                found.append(frac)
 
-                if frac not in found:
-
-                    found.append(frac)
-
-                    if len(found) >= amount:
-                        break
+                if len(found) >= amount:
+                    break
 
         denominator += 1
 
@@ -169,7 +183,9 @@ def find_rationals(a, b, amount):
 
 def evaluate(expr, value):
 
-    return expr.subs(x, value)
+    variable = get_variable(expr)
+
+    return expr.subs(variable, value)
 
 
 # ==========================================================
@@ -177,5 +193,4 @@ def evaluate(expr, value):
 # ==========================================================
 
 def numeric(expr):
-
     return N(expr)
